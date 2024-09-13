@@ -13,20 +13,27 @@ export default function Gallery() {
   const [images, setImages] = useState<ImageData[]>([]);
   const [nextCursor, setNextCursor] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   const fetchImages = async (cursor: string | null = null) => {
     setLoading(true);
+    setError(null);
     const params = new URLSearchParams({
       ...(cursor && { next_cursor: cursor }),
     });
     try {
       const response = await fetch(`/api/images?${params.toString()}`);
-      if (!response.ok) throw new Error('Failed to fetch images');
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || `HTTP error! status: ${response.status}`);
+      }
       const data = await response.json();
-      setImages(prevImages => [...prevImages, ...data.resources]);
+      console.log('Fetched data:', data);
+      setImages(data.resources);
       setNextCursor(data.next_cursor);
     } catch (error) {
       console.error('Error loading images:', error);
+      setError(error instanceof Error ? error.message : 'An unknown error occurred');
     } finally {
       setLoading(false);
     }
@@ -39,16 +46,18 @@ export default function Gallery() {
   return (
     <div className="min-h-screen bg-yellow-50 p-8">
       <h1 className="text-4xl font-bold mb-8 text-center">Ugly Butter Gallery</h1>
+      {error && <p className="text-red-500 text-center mb-4">Error: {error}</p>}
+      {loading && <p className="text-center mb-4">Loading...</p>}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
         {images.map((image) => (
           <div key={image.public_id} className="bg-white p-4 rounded-lg shadow">
             <CldImage
-              width="400"
-              height="300"
+              width="800"
+              height="800"
               src={image.public_id}
               sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
               alt="Ugly butter"
-              className="w-full h-48 object-cover mb-4 rounded"
+              className="w-full h-auto object-cover mb-4 rounded"
             />
             <p className="text-center">Uploaded on: {new Date(image.created_at).toLocaleDateString()}</p>
           </div>
