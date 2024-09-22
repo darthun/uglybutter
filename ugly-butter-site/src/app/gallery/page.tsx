@@ -8,7 +8,7 @@ import { createClientComponentClient } from '@supabase/auth-helpers-nextjs'
 interface ImageData {
   public_id: string;
   created_at: string;
-  user_id: string;
+  username: string;
 }
 
 export default function Gallery() {
@@ -35,7 +35,7 @@ export default function Gallery() {
       // Fetch metadata from Supabase
       const { data: metadataData, error: metadataError } = await supabase
         .from('image_metadata')
-        .select('public_id, user_id, created_at')
+        .select('public_id, username, created_at')
         .in('public_id', cloudinaryData.resources.map((img: any) => img.public_id));
       
       if (metadataError) {
@@ -47,7 +47,7 @@ export default function Gallery() {
         const metadata = metadataData.find((m: any) => m.public_id === cloudinaryImage.public_id);
         return {
           ...cloudinaryImage,
-          user_id: metadata?.user_id || 'Unknown',
+          user_id: metadata?.username || 'Unknown',
           created_at: metadata?.created_at || cloudinaryImage.created_at
         };
       });
@@ -83,7 +83,7 @@ export default function Gallery() {
               className="w-full h-auto object-cover mb-4 rounded"
             />
             <p className="text-center">Uploaded on: {new Date(image.created_at).toLocaleDateString()}</p>
-            <p className="text-center">By: User {image.user_id.slice(0, 8)}</p>
+            <p className="text-center">By: {image.username}</p>
           </div>
         ))}
       </div>

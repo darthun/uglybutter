@@ -28,7 +28,11 @@ export default function Upload() {
     if (session) {
       const { error } = await supabase
         .from('image_metadata')
-        .insert({ public_id: publicId, user_id: session.user.id })
+        .insert({
+          public_id: publicId,
+          user_id: session.user.id,
+          username: session.user.user_metadata.full_name ||'Anonymous User'
+         })
       
       if (error) {
         console.error('Error saving image metadata:', error)
