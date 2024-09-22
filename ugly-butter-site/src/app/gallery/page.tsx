@@ -1,9 +1,10 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import Link from 'next/link';
 import { CldImage } from 'next-cloudinary';
 import { createClientComponentClient } from '@supabase/auth-helpers-nextjs'
+import { SupabaseClient } from '@supabase/supabase-js';
 
 interface ImageData {
   public_id: string;
@@ -11,14 +12,24 @@ interface ImageData {
   username: string;
 }
 
+interface CloudinaryResource {
+  public_id: string;
+  created_at: string;
+}
+
+interface CloudinaryResponse {
+  resources: CloudinaryResource[];
+  next_cursor: string | null;
+}
+
 export default function Gallery() {
   const [images, setImages] = useState<ImageData[]>([]);
   const [nextCursor, setNextCursor] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const supabase = createClientComponentClient()
+  const supabase = createClientComponentClient<SupabaseClient>();
 
-  const fetchImages = async (cursor: string | null = null) => {
+  const fetchImages = useCallback(async (cursor: string | null = null) => {
     setLoading(true);
     setError(null);
     const params = new URLSearchParams({
@@ -30,21 +41,21 @@ export default function Gallery() {
         const errorData = await response.json();
         throw new Error(errorData.error || `HTTP error! status: ${response.status}`);
       }
-      const cloudinaryData = await response.json();
+      const cloudinaryData: CloudinaryResponse = await response.json();
       
       // Fetch metadata from Supabase
       const { data: metadataData, error: metadataError } = await supabase
         .from('image_metadata')
         .select('public_id, username, created_at')
-        .in('public_id', cloudinaryData.resources.map((img: any) => img.public_id));
+        .in('public_id', cloudinaryData.resources.map((img) => img.public_id));
       
       if (metadataError) {
         throw new Error('Error fetching image metadata');
       }
 
       // Combine Cloudinary data with Supabase metadata
-      const combinedData = cloudinaryData.resources.map((cloudinaryImage: any) => {
-        const metadata = metadataData.find((m: any) => m.public_id === cloudinaryImage.public_id);
+      const combinedData = cloudinaryData.resources.map((cloudinaryImage) => {
+        const metadata = metadataData?.find((m) => m.public_id === cloudinaryImage.public_id);
         return {
           ...cloudinaryImage,
           username: metadata?.username || 'Unknown',
@@ -60,11 +71,11 @@ export default function Gallery() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [supabase]);
 
   useEffect(() => {
     fetchImages();
-  }, []);
+  }, [fetchImages]);
 
   return (
     <div className="min-h-screen bg-yellow-50 p-8">
@@ -75,8 +86,8 @@ export default function Gallery() {
         {images.map((image) => (
           <div key={image.public_id} className="bg-white p-4 rounded-lg shadow">
             <CldImage
-              width="800"
-              height="800"
+              width={800}
+              height={800}
               src={image.public_id}
               sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
               alt="Ugly butter"
