@@ -2,7 +2,6 @@
 
 import { useState } from 'react'
 import { createClientComponentClient } from '@supabase/auth-helpers-nextjs'
-import { useRouter } from 'next/navigation'
 
 export default function Login() {
   const [loading, setLoading] = useState(false)
