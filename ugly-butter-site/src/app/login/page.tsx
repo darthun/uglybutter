@@ -6,7 +6,6 @@ import { useRouter } from 'next/navigation'
 
 export default function Login() {
   const [loading, setLoading] = useState(false)
-  const router = useRouter()
   const supabase = createClientComponentClient()
 
   const handleGoogleLogin = async () => {
