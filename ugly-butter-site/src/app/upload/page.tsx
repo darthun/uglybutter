@@ -1,10 +1,31 @@
-'use client';
+'use client'
 
-import { useState } from 'react';
-import { CldUploadWidget, CldImage } from 'next-cloudinary';
+import { useEffect, useState } from 'react'
+import { useRouter } from 'next/navigation'
+import { createClientComponentClient } from '@supabase/auth-helpers-nextjs'
+import { CldUploadWidget, CldImage } from 'next-cloudinary'
 
 export default function Upload() {
-  const [uploadedImageId, setUploadedImageId] = useState<string | null>(null);
+  const [uploadedImageId, setUploadedImageId] = useState<string | null>(null)
+  const [isLoading, setIsLoading] = useState(true)
+  const router = useRouter()
+  const supabase = createClientComponentClient()
+
+  useEffect(() => {
+    const checkUser = async () => {
+      const { data: { session } } = await supabase.auth.getSession()
+      if (!session) {
+        router.push('/login')
+      } else {
+        setIsLoading(false)
+      }
+    }
+    checkUser()
+  }, [supabase, router])
+
+  if (isLoading) {
+    return <div>Loading...</div>
+  }
 
   return (
     <div className="min-h-screen bg-yellow-50 p-8 flex flex-col items-center justify-center">
@@ -13,20 +34,21 @@ export default function Upload() {
         <CldUploadWidget 
           uploadPreset="ugly_butter"
           onSuccess={(result, { widget }) => {
-            setUploadedImageId((result?.info as { public_id: string })?.public_id);
-            widget.close();
+            const publicId = (result?.info as { public_id: string })?.public_id
+            setUploadedImageId(publicId)
+            widget.close()
           }}
         >
           {({ open }) => {
             function handleOnClick(e: React.MouseEvent<HTMLButtonElement>) {
-              e.preventDefault();
-              open();
+              e.preventDefault()
+              open()
             }
             return (
               <button className="bg-yellow-500 hover:bg-yellow-600 text-white font-bold py-2 px-4 rounded w-full mb-4" onClick={handleOnClick}>
                 Upload an Image
               </button>
-            );
+            )
           }}
         </CldUploadWidget>
         
@@ -44,5 +66,5 @@ export default function Upload() {
         )}
       </div>
     </div>
-  );
+  )
 }
