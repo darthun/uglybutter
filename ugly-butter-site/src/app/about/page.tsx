@@ -9,10 +9,10 @@ export default function About() {
           Ugly Butter is a fun community-driven platform where users can share and rate pictures of, well, ugly butter!
         </p>
         <p className="mb-4">
-          Whether it's crumbs, oddly sculpted, or just plain unappealing, we shame all forms of butter in their inglorious states.
+          Whether it&apos;s crumbs, oddly sculpted, or just plain unappealing, we shame all forms of butter in their inglorious states.
         </p>
         <p>
-          Join our community, upload your ugliest butter pics, and vote on others. Let's spread the joy of imperfect dairy!
+          Join our community, upload your ugliest butter pics, and vote on others. Let&apos;s spread the joy of imperfect dairy!
         </p>
       </div>
       <Link href="/" className="mt-8 text-blue-500 hover:underline">
