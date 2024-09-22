@@ -3,10 +3,12 @@
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { CldImage } from 'next-cloudinary';
+import { createClientComponentClient } from '@supabase/auth-helpers-nextjs'
 
 interface ImageData {
   public_id: string;
   created_at: string;
+  user_id: string;
 }
 
 export default function Gallery() {
@@ -14,6 +16,7 @@ export default function Gallery() {
   const [nextCursor, setNextCursor] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const supabase = createClientComponentClient()
 
   const fetchImages = async (cursor: string | null = null) => {
     setLoading(true);
@@ -27,10 +30,30 @@ export default function Gallery() {
         const errorData = await response.json();
         throw new Error(errorData.error || `HTTP error! status: ${response.status}`);
       }
-      const data = await response.json();
-      console.log('Fetched data:', data);
-      setImages(data.resources);
-      setNextCursor(data.next_cursor);
+      const cloudinaryData = await response.json();
+      
+      // Fetch metadata from Supabase
+      const { data: metadataData, error: metadataError } = await supabase
+        .from('image_metadata')
+        .select('public_id, user_id, created_at')
+        .in('public_id', cloudinaryData.resources.map((img: any) => img.public_id));
+      
+      if (metadataError) {
+        throw new Error('Error fetching image metadata');
+      }
+
+      // Combine Cloudinary data with Supabase metadata
+      const combinedData = cloudinaryData.resources.map((cloudinaryImage: any) => {
+        const metadata = metadataData.find((m: any) => m.public_id === cloudinaryImage.public_id);
+        return {
+          ...cloudinaryImage,
+          user_id: metadata?.user_id || 'Unknown',
+          created_at: metadata?.created_at || cloudinaryImage.created_at
+        };
+      });
+
+      setImages(combinedData);
+      setNextCursor(cloudinaryData.next_cursor);
     } catch (error) {
       console.error('Error loading images:', error);
       setError(error instanceof Error ? error.message : 'An unknown error occurred');
@@ -60,6 +83,7 @@ export default function Gallery() {
               className="w-full h-auto object-cover mb-4 rounded"
             />
             <p className="text-center">Uploaded on: {new Date(image.created_at).toLocaleDateString()}</p>
+            <p className="text-center">By: User {image.user_id.slice(0, 8)}</p>
           </div>
         ))}
       </div>

@@ -23,6 +23,19 @@ export default function Upload() {
     checkUser()
   }, [supabase, router])
 
+  const saveImageMetadata = async (publicId: string) => {
+    const { data: { session } } = await supabase.auth.getSession()
+    if (session) {
+      const { error } = await supabase
+        .from('image_metadata')
+        .insert({ public_id: publicId, user_id: session.user.id })
+      
+      if (error) {
+        console.error('Error saving image metadata:', error)
+      }
+    }
+  }
+
   if (isLoading) {
     return <div>Loading...</div>
   }
@@ -36,6 +49,7 @@ export default function Upload() {
           onSuccess={(result, { widget }) => {
             const publicId = (result?.info as { public_id: string })?.public_id
             setUploadedImageId(publicId)
+            saveImageMetadata(publicId)
             widget.close()
           }}
         >
