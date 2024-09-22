@@ -47,7 +47,7 @@ export default function Gallery() {
         const metadata = metadataData.find((m: any) => m.public_id === cloudinaryImage.public_id);
         return {
           ...cloudinaryImage,
-          user_id: metadata?.username || 'Unknown',
+          username: metadata?.username || 'Unknown',
           created_at: metadata?.created_at || cloudinaryImage.created_at
         };
       });
