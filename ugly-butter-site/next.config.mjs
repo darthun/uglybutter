@@ -6,9 +6,6 @@ const withBundleAnalyzerWrapper = withBundleAnalyzer({
 
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  experimental: {
-    granularChunks: true
-  },
   images: {
     domains: ['res.cloudinary.com'],
   },
