@@ -1,8 +1,21 @@
+import withBundleAnalyzer from '@next/bundle-analyzer';
+
+const withBundleAnalyzerWrapper = withBundleAnalyzer({
+  enabled: process.env.ANALYZE === 'true'
+});
+
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-    images:{
-        domains:['res.cloudinary.com'],
-    },
+  experimental: {
+    granularChunks: true
+  },
+  images: {
+    domains: ['res.cloudinary.com'],
+  },
+  webpack: (config, { isServer }) => {
+    // Additional webpack optimizations can go here
+    return config;
+  },
 };
 
-export default nextConfig;
+export default withBundleAnalyzerWrapper(nextConfig);
