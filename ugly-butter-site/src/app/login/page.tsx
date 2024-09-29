@@ -1,11 +1,21 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { createClientComponentClient } from '@supabase/auth-helpers-nextjs'
+import { useSearchParams } from 'next/navigation'
 
 export default function Login() {
   const [loading, setLoading] = useState(false)
   const supabase = createClientComponentClient()
+  const searchParams = useSearchParams()
+  const challenge = searchParams.get('challenge')
+  const error = searchParams.get('error')
+
+  useEffect(() => {
+    if (error) {
+      alert('Authentication failed. Please try again.')
+    }
+  }, [error])
 
   const handleGoogleLogin = async () => {
     try {
@@ -13,15 +23,13 @@ export default function Login() {
       const { error } = await supabase.auth.signInWithOAuth({
         provider: 'google',
         options: {
-          redirectTo: `${window.location.origin}/api/auth/callback`
+          redirectTo: `${window.location.origin}/api/auth/callback?challenge=${challenge}`,
         }
       })
       if (error) throw error
-    } catch (error: unknown) {
-      if(error instanceof Error){alert(error.message || error.message)}
-      else{
-        alert('An unknown error occured.')
-      }
+    } catch (error) {
+      alert('An error occurred during login. Please try again.')
+      console.error(error)
     } finally {
       setLoading(false)
     }
