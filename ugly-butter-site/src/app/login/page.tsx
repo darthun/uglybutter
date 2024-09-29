@@ -27,13 +27,10 @@ export default function Login() {
     try {
       setLoading(true)
       console.log('Initiating Google login with challenge:', challenge)
-      const { data, error } = await supabase.auth.signInWithOAuth({
+      const { error } = await supabase.auth.signInWithOAuth({
         provider: 'google',
         options: {
-          redirectTo: `${window.location.origin}/api/auth/callback`,
-          queryParams: {
-            challenge: challenge // Pass the challenge as a query parameter
-          }
+          redirectTo: `${window.location.origin}/api/auth/callback?challenge=${challenge}`,
         }
       })
       if (error) throw error

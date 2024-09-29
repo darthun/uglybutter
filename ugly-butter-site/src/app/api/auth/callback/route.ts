@@ -29,8 +29,8 @@ export async function GET(request: Request) {
 
   if (!code) {
     // If there's no code, we're starting the auth flow
-    const newChallenge = generateChallenge()
-    console.log('Generated new challenge:', newChallenge)
+    const newChallenge = challenge || generateChallenge()
+    console.log('Using challenge:', newChallenge)
     const response = NextResponse.redirect(`${requestUrl.origin}/login?challenge=${newChallenge}`)
     response.cookies.set('auth_challenge', newChallenge, { 
       httpOnly: true, 
@@ -45,6 +45,7 @@ export async function GET(request: Request) {
   try {
     const storedChallenge = request.cookies.get('auth_challenge')?.value
     console.log('Stored challenge:', storedChallenge)
+    console.log('Received challenge:', challenge)
 
     if (!storedChallenge || challenge !== storedChallenge) {
       console.error('Challenge mismatch:', { storedChallenge, receivedChallenge: challenge })
