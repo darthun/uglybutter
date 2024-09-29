@@ -3,48 +3,55 @@
 import { useState, useEffect } from 'react'
 import { createClientComponentClient } from '@supabase/auth-helpers-nextjs'
 import { useSearchParams, useRouter } from 'next/navigation'
+import { OAuthResponse } from '@supabase/supabase-js'
+
+// ... (keep the existing utility functions)
 
 export default function Login() {
-  const [loading, setLoading] = useState(false)
-  const supabase = createClientComponentClient()
+  const [loading, setLoading] = useState<boolean>(false)
   const searchParams = useSearchParams()
   const router = useRouter()
-  const challenge = searchParams.get('challenge')
   const error = searchParams.get('error')
+  const code = searchParams.get('code')
 
   useEffect(() => {
     if (error) {
       console.error('Login error:', error)
       alert('Authentication failed. Please try again.')
+    } else if (code) {
+      handleCallback(code)
     }
-    if (!challenge) {
-      console.log('No challenge found, redirecting to get a new one')
-      router.push('/api/auth/callback')
-    }
-  }, [error, challenge, router])
+  }, [error, code])
 
-  const handleGoogleLogin = async () => {
-    try {
-      setLoading(true)
-      console.log('Initiating Google login with challenge:', challenge)
-      const { error } = await supabase.auth.signInWithOAuth({
-        provider: 'google',
-        options: {
-          redirectTo: `${window.location.origin}/api/auth/callback?challenge=${challenge}`,
+  async function handleCallback(code: string): Promise<void> {
+    const codeVerifier = localStorage.getItem('codeVerifier');
+    if (codeVerifier) {
+      try {
+        const response = await fetch('/api/auth/callback', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ code, codeVerifier }),
+        });
+        if (response.ok) {
+          router.push('/dashboard'); // Redirect to dashboard or home page
+        } else {
+          throw new Error('Failed to exchange code for session');
         }
-      })
-      if (error) throw error
-    } catch (error) {
-      console.error('Login error:', error)
-      alert('An error occurred during login. Please try again.')
-    } finally {
-      setLoading(false)
+      } catch (error) {
+        console.error('Callback error:', error);
+        alert('An error occurred during login. Please try again.');
+      } finally {
+        localStorage.removeItem('codeVerifier');
+      }
+    } else {
+      console.error('Code verifier not found');
+      alert('An error occurred during login. Please try again.');
     }
   }
 
-  if (!challenge) {
-    return <div>Loading...</div>
-  }
+  // ... (keep the existing handleGoogleLogin function)
 
   return (
     <div className="min-h-screen bg-yellow-50 flex flex-col items-center justify-center p-4">
