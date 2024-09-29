@@ -15,12 +15,12 @@ export async function GET(request: Request) {
 }
 
 export async function POST(request: Request) {
-  const { code, codeVerifier } = await request.json()
+  const { code } = await request.json()
 
-  console.log('Received code and verifier:', { code, codeVerifier });
+  console.log('Received code:', code);
 
-  if (!code || !codeVerifier) {
-    return NextResponse.json({ error: 'Missing code or code verifier' }, { status: 400 })
+  if (!code) {
+    return NextResponse.json({ error: 'Missing code' }, { status: 400 })
   }
 
   const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
