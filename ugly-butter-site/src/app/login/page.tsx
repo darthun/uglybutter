@@ -2,37 +2,51 @@
 
 import { useState, useEffect } from 'react'
 import { createClientComponentClient } from '@supabase/auth-helpers-nextjs'
-import { useSearchParams } from 'next/navigation'
+import { useSearchParams, useRouter } from 'next/navigation'
 
 export default function Login() {
   const [loading, setLoading] = useState(false)
   const supabase = createClientComponentClient()
   const searchParams = useSearchParams()
+  const router = useRouter()
   const challenge = searchParams.get('challenge')
   const error = searchParams.get('error')
 
   useEffect(() => {
     if (error) {
+      console.error('Login error:', error)
       alert('Authentication failed. Please try again.')
     }
-  }, [error])
+    if (!challenge) {
+      console.log('No challenge found, redirecting to get a new one')
+      router.push('/api/auth/callback')
+    }
+  }, [error, challenge, router])
 
   const handleGoogleLogin = async () => {
     try {
       setLoading(true)
-      const { error } = await supabase.auth.signInWithOAuth({
+      console.log('Initiating Google login with challenge:', challenge)
+      const { data, error } = await supabase.auth.signInWithOAuth({
         provider: 'google',
         options: {
-          redirectTo: `${window.location.origin}/api/auth/callback?challenge=${challenge}`,
+          redirectTo: `${window.location.origin}/api/auth/callback`,
+          queryParams: {
+            challenge: challenge // Pass the challenge as a query parameter
+          }
         }
       })
       if (error) throw error
     } catch (error) {
+      console.error('Login error:', error)
       alert('An error occurred during login. Please try again.')
-      console.error(error)
     } finally {
       setLoading(false)
     }
+  }
+
+  if (!challenge) {
+    return <div>Loading...</div>
   }
 
   return (
