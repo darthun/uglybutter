@@ -11,7 +11,6 @@ export async function GET(request: Request) {
     return NextResponse.redirect(new URL('/login', request.url))
   }
 
-  // We'll handle the code in the POST request
   return NextResponse.redirect(new URL(`/login?code=${code}`, request.url))
 }
 
@@ -35,7 +34,8 @@ export async function POST(request: Request) {
   const supabase = createClient(supabaseUrl, supabaseKey)
 
   try {
-    const { data, error } = await supabase.auth.exchangeCodeForSession(code, { codeVerifier })
+    console.log('Exchanging code for session with Supabase');
+    const { data, error } = await supabase.auth.exchangeCodeForSession(code)
 
     if (error) {
       console.error('Supabase error:', error);
