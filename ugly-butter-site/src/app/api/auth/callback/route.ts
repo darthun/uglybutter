@@ -18,6 +18,8 @@ export async function GET(request: Request) {
 export async function POST(request: Request) {
   const { code, codeVerifier } = await request.json()
 
+  console.log('Received code and verifier:', { code, codeVerifier });
+
   if (!code || !codeVerifier) {
     return NextResponse.json({ error: 'Missing code or code verifier' }, { status: 400 })
   }
@@ -35,7 +37,12 @@ export async function POST(request: Request) {
   try {
     const { data, error } = await supabase.auth.exchangeCodeForSession(code, { codeVerifier })
 
-    if (error) throw error
+    if (error) {
+      console.error('Supabase error:', error);
+      throw error;
+    }
+
+    console.log('Session exchange successful');
 
     const response = NextResponse.json({ success: true })
     response.cookies.set('supabase-auth-token', data.session.access_token, { 
@@ -48,6 +55,6 @@ export async function POST(request: Request) {
     return response
   } catch (error) {
     console.error('Authentication error:', error)
-    return NextResponse.json({ error: 'Authentication failed' }, { status: 401 })
+    return NextResponse.json({ error: 'Authentication failed', details: error }, { status: 401 })
   }
 }
