@@ -1,52 +1,23 @@
-'use client'
+'use client';
 
-import { useState, useEffect } from 'react'
-import { createClientComponentClient } from '@supabase/auth-helpers-nextjs'
-import { useSearchParams, useRouter } from 'next/navigation'
-
-function generateCodeVerifier(): string {
-  const array = new Uint8Array(56);
-  crypto.getRandomValues(array);
-  return Array.from(array, (byte) => byte.toString(16).padStart(2, '0')).join('');
-}
-
-function sha256(plain: string): Promise<ArrayBuffer> {
-  const encoder = new TextEncoder();
-  const data = encoder.encode(plain);
-  return window.crypto.subtle.digest('SHA-256', data);
-}
-
-function base64urlencode(input: ArrayBuffer): string {
-  const uintArray = new Uint8Array(input);
-  const numberArray = Array.from(uintArray);
-  const asciiArray = numberArray.map((num) => String.fromCharCode(num));
-  const asciiString = asciiArray.join('');
-  return btoa(asciiString)
-    .replace(/\+/g, '-')
-    .replace(/\//g, '_')
-    .replace(/=+$/, '');
-}
-
-async function generateCodeChallenge(verifier: string): Promise<string> {
-  const hashed = await sha256(verifier);
-  return base64urlencode(hashed);
-}
+import { useState, useEffect } from 'react';
+import { useSearchParams, useRouter } from 'next/navigation';
 
 export default function Login() {
-  const [loading, setLoading] = useState<boolean>(false)
-  const searchParams = useSearchParams()
-  const router = useRouter()
-  const error = searchParams.get('error')
-  const code = searchParams.get('code')
+  const [loading, setLoading] = useState<boolean>(false);
+  const searchParams = useSearchParams();
+  const router = useRouter();
+  const error = searchParams.get('error');
+  const code = searchParams.get('code');
 
   useEffect(() => {
     if (error) {
-      console.error('Login error:', error)
-      alert('Authentication failed. Please try again.')
+      console.error('Login error:', error);
+      alert('Authentication failed. Please try again.');
     } else if (code) {
-      handleCallback(code)
+      handleCallback(code);
     }
-  }, [error, code])
+  }, [error, code]);
 
   async function handleCallback(code: string): Promise<void> {
     try {
@@ -73,33 +44,16 @@ export default function Login() {
 
   const handleLogin = async (): Promise<void> => {
     try {
-      setLoading(true)
-      const codeVerifier = generateCodeVerifier();
-      const codeChallenge = await generateCodeChallenge(codeVerifier);
-
-      console.log('Generated code verifier:', codeVerifier);
-      sessionStorage.setItem('codeVerifier', codeVerifier);
-
-      const supabase = createClientComponentClient()
-      const { error } = await supabase.auth.signInWithOAuth({
-        provider: 'google',
-        options: {
-          redirectTo: `${window.location.origin}/api/auth/callback`,
-          queryParams: {
-            code_challenge: codeChallenge,
-            code_challenge_method: 'S256',
-          },
-        }
-      })
-      if (error) throw error
-
+      setLoading(true);
+      // Redirect to Supabase for OAuth login initiation
+      window.location.href = `${process.env.NEXT_PUBLIC_SUPABASE_URL}/auth/v1/authorize?provider=google&redirect_to=${window.location.origin}/login`;
     } catch (error) {
-      console.error('Login error:', error)
-      alert('An error occurred during login. Please try again.')
+      console.error('Login error:', error);
+      alert('An error occurred during login. Please try again.');
     } finally {
-      setLoading(false)
+      setLoading(false);
     }
-  }
+  };
 
   return (
     <div className="min-h-screen bg-yellow-50 flex flex-col items-center justify-center p-4">
@@ -112,5 +66,5 @@ export default function Login() {
         {loading ? 'Loading...' : 'Sign in with Google'}
       </button>
     </div>
-  )
+  );
 }
