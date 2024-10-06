@@ -2,29 +2,29 @@
 
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
+import { useSupabaseClient } from '@supabase/auth-helpers-react'
 
 export default function LoginPage() {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [error, setError] = useState<string | null>(null)
   const router = useRouter()
+  const supabase = useSupabaseClient()
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setError(null)
     
     try {
-      const response = await fetch('/api/login', {
-        method: 'POST',
-        body: new FormData(e.target as HTMLFormElement),
+      const { error } = await supabase.auth.signInWithPassword({
+        email,
+        password,
       })
 
-      const data = await response.json()
-
-      if (!response.ok) {
-        setError(data.error || 'An error occurred during login')
+      if (error) {
+        setError(error.message)
       } else {
-        router.push('/') // Redirect to dashboard or home page
+        router.push('/dashboard')  // or wherever you want to redirect after login
       }
     } catch (error) {
       console.error('An error occurred:', error)
@@ -34,19 +34,18 @@ export default function LoginPage() {
 
   return (
     <form onSubmit={handleSubmit}>
-      {/* Form fields remain the same */}
       <input
-        name="email"
         type="email"
         value={email}
         onChange={(e) => setEmail(e.target.value)}
+        placeholder="Email"
         required
       />
       <input
-        name="password"
         type="password"
         value={password}
         onChange={(e) => setPassword(e.target.value)}
+        placeholder="Password"
         required
       />
       {error && <div>{error}</div>}
