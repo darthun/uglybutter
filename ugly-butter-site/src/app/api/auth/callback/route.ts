@@ -1,4 +1,4 @@
-import { createClient } from '@supabase/supabase-js'
+/*import { createClient } from '@supabase/supabase-js'
 import { NextResponse } from 'next/server'
 
 export const runtime = 'edge'
@@ -57,4 +57,4 @@ export async function POST(request: Request) {
     console.error('Authentication error:', error)
     return NextResponse.json({ error: 'Authentication failed', details: error }, { status: 401 })
   }
-}
+}*/
