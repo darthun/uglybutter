@@ -24,7 +24,7 @@ export default function LoginPage() {
       if (error) {
         setError(error.message)
       } else {
-        router.push('/dashboard')  // or wherever you want to redirect after login
+        router.push('/login')  // or wherever you want to redirect after login
       }
     } catch (error) {
       console.error('An error occurred:', error)
