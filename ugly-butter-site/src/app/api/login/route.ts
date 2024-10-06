@@ -6,14 +6,14 @@ import { NextResponse } from 'next/server'
 export const runtime = 'edge'
 
 export async function POST(request: Request) {
-  const requestUrl = new URL(request.url)
+  //const requestUrl = new URL(request.url)
   const formData = await request.formData()
   const email = String(formData.get('email'))
   const password = String(formData.get('password'))
   
   const supabase = createRouteHandlerClient({ cookies })
 
-  const { data, error } = await supabase.auth.signInWithPassword({
+  const { error } = await supabase.auth.signInWithPassword({
     email,
     password,
   })
