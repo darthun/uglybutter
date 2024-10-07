@@ -10,6 +10,9 @@ interface ImageData {
   public_id: string;
   created_at: string;
   username: string;
+  bbi_score: string;
+  bbi_comment: string;
+  bbi_grade: number;
 }
 
 interface CloudinaryResource {
@@ -46,7 +49,7 @@ export default function Gallery() {
       // Fetch metadata from Supabase
       const { data: metadataData, error: metadataError } = await supabase
         .from('image_metadata')
-        .select('public_id, username, created_at')
+        .select('public_id, username, created_at, bbi_score, bbi_comment,bbi_grade')
         .in('public_id', cloudinaryData.resources.map((img) => img.public_id));
       
       if (metadataError) {
@@ -59,7 +62,10 @@ export default function Gallery() {
         return {
           ...cloudinaryImage,
           username: metadata?.username || 'Unknown',
-          created_at: metadata?.created_at || cloudinaryImage.created_at
+          created_at: metadata?.created_at || cloudinaryImage.created_at,
+          bbi_score: metadata?.bbi_score || 'Butterless Blunder',
+          bbi_comment: metadata?.bbi_comment || 'No comment',
+          bbi_grade: metadata?.bbi_grade || 0.0
         };
       });
 
@@ -84,7 +90,7 @@ export default function Gallery() {
       {loading && <p className="text-center mb-4">Loading...</p>}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
         {images.map((image) => (
-          <div key={image.public_id} className="bg-white p-4 rounded-lg shadow">
+          <div key={image.public_id} className="bg-white p-6 rounded-lg shadow">
             <CldImage
               width={800}
               height={800}
@@ -93,8 +99,16 @@ export default function Gallery() {
               alt="Ugly butter"
               className="w-full h-auto object-cover mb-4 rounded"
             />
-            <p className="text-center">Uploaded on: {new Date(image.created_at).toLocaleDateString()}</p>
-            <p className="text-center">By: {image.username}</p>
+
+            <div className="space-y-2">
+              <h2 className="font-bold text-xl text-yellow-500">{image.bbi_score}</h2>
+              <p className="font-semibold text-gray-700">Butter Blunder Index: {image.bbi_grade}/10</p>
+              <p className="italic text-gray-600 mt-3">{image.bbi_comment}</p>
+            </div>
+            <div className="mt-4 text-xs text-gray-400 text-center">
+              <p>Uploaded on {new Date(image.created_at).toLocaleDateString()}</p>
+              <p>By {image.username}</p>
+            </div>
           </div>
         ))}
       </div>
