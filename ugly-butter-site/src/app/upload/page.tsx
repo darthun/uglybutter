@@ -47,6 +47,9 @@ export default function Upload() {
   return (
     <div className="min-h-screen bg-yellow-50 p-8 flex flex-col items-center justify-center">
       <h1 className="text-4xl font-bold mb-8">Upload Your Ugly Butter</h1>
+      <p className="text-sm italic text-center mb-8 text-gray-600">
+        "Manual Review can take a few days before available on gallery."
+      </p>
       <div className="bg-white p-8 rounded-lg shadow-md w-full max-w-md">
         <CldUploadWidget 
           uploadPreset="ugly_butter"
