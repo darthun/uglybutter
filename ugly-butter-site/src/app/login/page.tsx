@@ -13,8 +13,8 @@ export default function LoginPage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    setError(null)
-    
+    setError('Email login is coming soon ! Please use Google login for now.')
+    /*
     try {
       const { error } = await supabase.auth.signInWithPassword({
         email,
@@ -29,7 +29,7 @@ export default function LoginPage() {
     } catch (error) {
       console.error('An error occurred:', error)
       setError('An unexpected error occurred')
-    }
+    }*/
   }
 
   const handleGoogleLogin = async () => {
@@ -60,7 +60,8 @@ export default function LoginPage() {
           onChange={(e) => setEmail(e.target.value)}
           placeholder="Email"
           required
-          className="w-full p-2 mb-4 border rounded"
+          className="w-full p-2 mb-4 border rounded opacity-50 cursor-not-allowed"
+          disabled
         />
         <input
           type="password"
@@ -68,11 +69,12 @@ export default function LoginPage() {
           onChange={(e) => setPassword(e.target.value)}
           placeholder="Password"
           required
-          className="w-full p-2 mb-4 border rounded"
+          className="w-full p-2 mb-4 border rounded opacity-50 cursor-not-allowed"
+          disabled
         />
         {error && <div className="text-red-500 mb-4">{error}</div>}
-        <button type="submit" className="w-full bg-blue-500 text-white p-2 rounded hover:bg-blue-600">
-          Log in
+        <button type="submit" className="w-full bg-blue-500 text-white p-2 rounded hover:bg-blue-600 cursor-not-allowed">
+          Email Login Coming Soon
         </button>
         <div className="mt-4 text-center">
           <span className="text-gray-500">or</span>
