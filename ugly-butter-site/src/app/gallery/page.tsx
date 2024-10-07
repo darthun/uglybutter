@@ -87,7 +87,7 @@ export default function Gallery() {
     <div className="min-h-screen bg-yellow-50 p-8">
       <h1 className="text-4xl font-bold mb-8 text-center">Ugly Butter Gallery</h1>
       <p className="text-sm italic text-center mb-8 text-gray-600">
-        "Every submission is tastefully graded before the review is made public."
+        Every submission is tastefully graded before the review is made public.
       </p>
       {error && <p className="text-red-500 text-center mb-4">Error: {error}</p>}
       {loading && <p className="text-center mb-4">Loading...</p>}
